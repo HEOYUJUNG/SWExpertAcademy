@@ -1,13 +1,12 @@
 package D3;
 
-import java.util.Arrays;
 import java.util.Scanner;
 
 public class P1215_회문1 {
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in);
 
-		for (int tc = 1; tc <= 1; tc++) {
+		for (int tc = 1; tc <= 10; tc++) {
 			// 찾아야 하는 회문의 길이
 			int length = sc.nextInt();
 
@@ -18,7 +17,6 @@ public class P1215_회문1 {
 				for (int c = 0; c < 8; c++) {
 					board[r][c] = temp.charAt(c);
 				}
-				System.out.println(Arrays.toString(board[r]));
 			}
 
 			// 회문 개수 카운트
@@ -27,41 +25,35 @@ public class P1215_회문1 {
 			// 가로 탐색
 			for (int r = 0; r < 8; r++) {
 				// 회문 길이 홀수 or 짝수 관계X => index : 0 ~ (length/2-1)
-
-				// 패턴 비교할 배열 생성
-				char[] pattern = new char[length / 2];
-				for (int idx = 0; idx < length / 2; idx++) {
-					pattern[idx] = board[r][idx];
-				}
-
-				int i = 0;// board의 행에서 탐색
-				int j = 0;// pattern에서 탐색
-
-				while (i < 8) {
-					System.out.println(Arrays.toString(pattern));
-					if (board[r][i+length-1-j] != pattern[j]) {						
-						i -= j;
-						j = -1;
-						for (int idx = 0; idx < length / 2; idx++) {
-							pattern[idx] = board[r][i+1+idx];
+				for (int c = 0; c < 9 - length; c++) {
+					// 일단, 회문이라고 가정
+					boolean flag = true;
+					for (int i = 0; i < (length / 2); i++) {
+						if (board[r][c + i] != board[r][c + length - 1 - i]) {
+							// 회문 아니면 false로 바꿈
+							flag = false;
 						}
 					}
-					i++;
-					j++;
-					if (j == length / 2) {
-						System.out.print("r : " + r +"\n");
-						i = i - j + 1;
-						j = 0;
-						for (int idx = 0; idx < length / 2; idx++) {
-							pattern[idx] = board[r][i+idx];
-						}
-					}
+					// 회문이면 카운트!
+					if(flag) cnt++;
 				}
 			}
 
 			// 세로 탐색
+			for (int r = 0; r < 8; r++) {
+				// 회문 길이 홀수 or 짝수 관계X => index : 0 ~ (length/2-1)
+				for (int c = 0; c < 9 - length; c++) {
+					boolean flag = true;
+					for (int i = 0; i < (length / 2); i++) {
+						if (board[c+i][r] != board[c + length - 1 - i][r]) {
+							flag = false;
+						}
+					}
+					if(flag) cnt++;
+				}
+			}
 
-			System.out.printf("#%d %d", tc, cnt);
+			System.out.printf("#%d %d\n", tc, cnt);
 		}
 	} // main
 }
