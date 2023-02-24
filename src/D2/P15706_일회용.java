@@ -34,25 +34,52 @@ public class P15706_일회용 {
 			List<Integer> cut = new ArrayList<>();
 			cut.add(score[0]);
 			for (int i = 1; i < N; i++) {
-				
+				if (score[i] != cut.get(cut.size() - 1)) {
+					cut.add(score[i]);
+				}
 			}
 
 			// 처음에는 T1을 전체 성적 중 최소값, T2를 전체 성적 중 최대값으로 설정.
 			// 단, C분반 나눌 때 T1미만이 아닌, T1 이하로 생각하자.
 			// B반은 T1초과 T2 미만
-			int T1 = score[0];
-			int T2 = score[N - 1];
+			int T1 = cut.get(0);
+			int T2 = cut.get(cut.size() - 1);
+			// 제일 신입 사원이 많은 분반과 가장 적은 분반의 차의 최소값
+			int minD = 0;
 
 			// 분반별 최소 및 최대 인원 조건 만족하는지 확인
 			while (true) {
-				// 1. 일단 A, C반 확인 -> 만족 안하면 만족 안하는 쪽 변경(T1은 다음으로 높은 성적, T2는 다음으로 낮은 성적)
+				// A, B, C 반의 인원
+				int A = 0;
+				int B = 0;
+				int C = 0;
+				// A,B,C반 인원 세보기
 				for (int i = 0; i < N; i++) {
-
+					if (score[i] <= T1) {
+						C++;
+					} else if (score[i] >= T2) {
+						A++;
+					} else {
+						B++;
+					}
 				}
-				// 2. A, C반 만족하면 -> B반 확인
-				// 3. B반 만족 안하면 T1변경 -> T1 == T2 되면
-				// 4. 다시 처음 T1, T2로 바꾸고 T2변경하면서 확인
+
+				// 최소, 최대 인원 만족하면 가장 가장 많은 분반과 적은 분반 차이 구하기 + 최소값 갱신
+				if (A >= K_MIN && A <= K_MAX && B >= K_MIN && B <= K_MAX && C >= K_MIN && C <= K_MAX) {
+					int max = Math.max(Math.max(A, B), C);
+					int min = Math.min(Math.min(A, B), C);
+					if (max - min < minD) {
+						minD = max - min;
+					}
+				}
+
+				// T1, T2 바꿔주기
+				T1++;
+				T2--;
+
 			}
-		}
-	}
+
+//			System.out.printf("#%d %d", tc, minD);
+		} // testcase
+	} // main
 }
