@@ -1,69 +1,15 @@
 package 분류없음;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Scanner;
 
 public class P2383_점심식사시간 {
-	static ArrayList<Integer>[] stairs;
-	public static void main(String[] args) {
-		Scanner sc = new Scanner(System.in);
-		int T = sc.nextInt(); // 테케 개수
-		for (int tc = 1; tc <= T; tc++) {
-			int N = sc.nextInt(); // 방의 한 변 길이
-			int minOfTotalTime = Integer.MAX_VALUE;
-//			int[][] map = new int[N][N]; // 지도
-//			int[][] stairInfo = new int[2][3]; // 계단 2개의 1.길이 2.행 3.열 저장해 둘 배열
-
-			ArrayList<Person> p = new ArrayList<>();
-			ArrayList<Stair> s = new ArrayList<>();
-
-			// 계단 2개. 각각의 계단으로 가야할 사람들의 남은 거리를 list에 넣을것임. 남은 거리 오름차순으로 정렬!
-			stairs = new ArrayList[2];
-			
-			// 지도 정보 입력받으면서 사람인 경우와 계단인 경우만 저장하기
-			for (int r = 0; r < N; r++) {
-				for (int c = 0; c < N; c++) {
-					int tmp = sc.nextInt();
-					if (tmp == 1) { // 사람인 경우
-						p.add(new Person(r, c));
-					} else if (tmp >= 2) { // 계단인 경우
-						s.add(new Stair(r, c, tmp));
-					}
-				}
-			}
-
-			// 사람마다 어떤 계단으로 가야하는지 달아놓기
-			for (int i = 0; i < p.size(); i++) {
-				
-				for (int m = 0; m < 2; m++) {
-					stairs[m] = new ArrayList<>(); // 초기화 해주기
-				}
-
-				
-				for (int j = 0; j < i; i++) {
-					stairs[0].add(distance(p.get(j), s.get(0)));
-				}
-				for (int j = i; j < p.size(); j++) {
-					stairs[1].add(distance(p.get(j), s.get(1)));
-				}
-				System.out.println("여기?");
-//				System.out.println(stairs[0]);
-//				System.out.println(stairs[1]);
-				int totalTime = 0;
-				// 가까운 사람이 앞에 오도록 정렬
-				for (int t = 0; t < 2; t++) {
-					Collections.sort(stairs[t]);
-					System.out.println(stairs[t]);
-					totalTime = Math.max(totalTime, move(stairs[t], s.get(t).length));
-				}
-				minOfTotalTime = Math.min(minOfTotalTime, totalTime);
-				System.out.println(minOfTotalTime);
-			}
-
-			System.out.println("#" + tc + " " + minOfTotalTime);
-		} // testcase
-	} // main
+	// 계단 2개. 각각의 계단으로 가야할 사람들의 남은 거리를 list에 넣을것임
+	static PriorityQueue<Integer>[] stairs;
 
 	private static class Person {
 		int r, c; // 사람이 있는 위치
@@ -86,7 +32,63 @@ public class P2383_점심식사시간 {
 
 	}
 
-	// 두 점 사이 거리 계산해서 반환
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		int T = sc.nextInt(); // 테케 개수
+		for (int tc = 1; tc <= T; tc++) {
+			int N = sc.nextInt(); // 방의 한 변 길이
+			int minOfTotalTime = Integer.MAX_VALUE;
+
+			ArrayList<Person> p = new ArrayList<>(); // 사람들 저장할 리스트
+			ArrayList<Stair> s = new ArrayList<>(); // 계단 저장할 리스트 (2개)
+
+			// 입력 받으면서 사람, 계단 나눠서 저장하기
+			for (int r = 0; r < N; r++) {
+				for (int c = 0; c < N; c++) {
+					int tmp = sc.nextInt();
+					if (tmp == 1) { // 사람인 경우
+						p.add(new Person(r, c));
+					} else if (tmp >= 2) { // 계단인 경우
+						s.add(new Stair(r, c, tmp));
+					}
+				}
+			}
+
+			int people = p.size(); // 전체 사람 수
+			for (int i = 0; i < (1 << people); i++) { // 부분 집합 개수
+				stairs = new PriorityQueue[2]; // 처음에 가까운 사람들이 앞에 오게 정렬해주고 싶으니까 우선순위큐 썼음
+				// 초기화 해주기
+				for (int m = 0; m < 2; m++) {
+					stairs[m] = new PriorityQueue<>();
+				}
+
+				for (int j = 0; j < people; j++) {
+					if ((i & (1 << j)) > 0) { // 부분집합 i가 j번째 원소(=사람)를 가지고 있음
+						// 첫번째 계단으로 갈 사람 -> 서둘러 가세요~~
+						stairs[0].offer(distance(p.get(j), s.get(0)));
+					} else {
+						// 두번째 계단으로 갈 사람 -> 서둘러 가세요~~
+						stairs[1].offer(distance(p.get(j), s.get(1)));
+					}
+				}
+
+				// 여기서 사람들 별로 어느 계단으로 갈 것인지 나뉘어 있음
+				// 가까운 사람이 앞에 오도록 정렬
+				int totalTime = 0;
+				for (int t = 0; t < 2; t++) {
+					Queue<Integer> tempQ = new LinkedList<>();
+					while (!stairs[t].isEmpty()) {
+						tempQ.add(stairs[t].poll());
+					}
+					totalTime = Math.max(totalTime, move(tempQ, s.get(t).length));
+				}
+				minOfTotalTime = Math.min(totalTime, minOfTotalTime); // 최소 시간 갱신
+			}
+			System.out.println("#" + tc + " " + minOfTotalTime);
+		} // tc 완 ㅋ
+	}
+
+	// 사람과 계단 사이 거리 계산해서 반환
 	private static int distance(Person p, Stair s) {
 		return Math.abs(p.r - s.r) + Math.abs(p.c - s.c);
 	}
@@ -94,28 +96,30 @@ public class P2383_점심식사시간 {
 	// 특정 계단으로 내려가야하는 사람들의 거리가 들어 있는 리스트를 받아서
 	// 그 사람들이 전부 내려가는 데 걸리는 시간을 반환
 	// length : 현재 계단의 길이
-	private static int move(ArrayList<Integer> list, int length) {
+	private static int move(Queue<Integer> q, int length) {
 		length = (-1) * length;
-		int cnt = 0;
-		int stairCnt = 0;
-		while (!list.isEmpty()) {
-//			System.out.println(list);
-//			int size = list.size();
-			cnt++;
-			for (int i = 0; i < list.size(); i++) {
-				int tmp = list.get(i);
-				if (tmp == 0 && stairCnt == 3) { // 이제 계단을 내려갈 차례인데, 계단에 이미 3명이 있으면 내려갈 수 없음
-					continue;
-				} else {
+		int minute = 0; // 걸린 시간
+		int stairCnt = 0; // 계단에 있는 사람 수 -> 핸드폰 하지 말고 빨리빨리 갈 것 !!
+
+		while (!q.isEmpty()) { // 우큐 빌 때까지 돌아 ~~
+			minute++;
+			int size = q.size();
+			for (int i = 0; i < size; i++) {
+				int tmp = q.poll();
+				if (tmp == 0 && stairCnt == 3) { // 이제 계단을 내려갈 차례인데, 계단에 이미 3명이 있으면 내려갈 수 없음 -> 빨리 가세요!!
+					q.offer(tmp);
+					continue; // ㄴㄴ 돌아가 ~~
+				} else if (tmp == 0) { // 계단 내려갈 수 있으면 -> 무릎 조심 !!(연골 브륄레,,)
 					stairCnt++;
 				}
-				list.set(i, list.get(i) - 1);
-				if (list.get(i) < length) {
-					list.remove(i--);
+				tmp -= 1;
+				if (tmp < length) {
 					stairCnt--;
+					continue; // ㄴㄴ 돌아가 ~~
 				}
+				q.offer(tmp); // !!!!!!
 			}
 		}
-		return cnt;
+		return minute; // 걸린 시간 리턴 ㅋ
 	}
 }
