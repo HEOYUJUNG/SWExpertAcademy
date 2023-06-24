@@ -14,7 +14,7 @@ public class 사탕분배 {
 			int A = Integer.parseInt(st.nextToken()); // 나연이 사탕 개수
 			int B = Integer.parseInt(st.nextToken()); // 다현이 사탕 개수
 			int K = Integer.parseInt(st.nextToken()); // 작업 반복 횟수
-			long a = calPower(K, A + B) * A % (A + B);
+			long a = calPower(K, A + B) * (long) A % (A + B);
 			sb.append("#").append(tc).append(" ").append(Math.min(a, A + B - a)).append("\n");
 		}
 		bw.write(sb.toString());
@@ -23,7 +23,9 @@ public class 사탕분배 {
 		bw.close();
 	}
 
-	static int calPower(int n, int sum) {
+	// 한 번 작업할 때마다 *2%(A+B)를 반복하기 때문에
+	// 이것을 K번 반복할 결과를 반환
+	static long calPower(int n, int sum) {
 		long res = 1;
 		long num = 2;
 		while (n > 0) {
@@ -33,6 +35,6 @@ public class 사탕분배 {
 			num = (num * num) % sum;
 			n /= 2;
 		}
-		return (int) res;
+		return res;
 	}
 }
